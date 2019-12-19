@@ -1,6 +1,6 @@
 Time Series Analysis- Bank Case Study 
 
-Project Link: http://rpubs.com/surabhik16/bankcasestudy
+Project Link: http://rpubs.com/surabhik16/timeseries-bankcasestudy
 
 Time series analysis comprises methods for analyzing time series data in order to extract meaningful statistics and other characteristics of the data. Time series forecasting is the use of a model to predict future values based on previously observed values of the same component.
 
