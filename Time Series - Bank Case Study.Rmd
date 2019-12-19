@@ -1,0 +1,141 @@
+---
+title: "Time Series Analysis- Bank Case Study"
+author: " By Surabhi Kamath"
+output: html_document
+---
+Time series analysis comprises methods for analyzing time series data in order to extract meaningful statistics and other characteristics of the data. Time series forecasting is the use of a model to predict future values based on previously observed values of the same component.
+
+In this project, We have a time series data of the monthly volume of commercial bank real-estate loans, in billions of dollars, from January 1973 to October 1978, a total of 70 observations.
+
+The data is as follows:
+
+46.5 47.0 47.5 48.3 49.1 50.1 51.1 52.0 53.2 53.9 54.5 55.2 55.6 55.7 <br />
+56.1 56.8 57.5 58.3 58.9 59.4 59.8 60.0 60.0 60.3 60.1 59.7 59.5 59.4 <br />
+59.3 59.2 59.1 59.0 59.3 59.5 59.5 59.5 59.7 59.7 60.5 60.7 61.3 61.4 <br />
+61.8 62.4 62.4 62.9 63.2 63.4 63.9 64.5 65.0 65.4 66.3 67.7 69.0 70.0 <br />
+71.4 72.5 73.4 74.6 75.2 75.9 76.8 77.9 79.2 80.5 82.6 84.4 85.9 87.6
+
+We will perform the following steps in order to analyze the data and make predictions:
+
+### STEP 1 : IMPORTING THE CODE
+First, we will load the required packages
+
+```{r message=FALSE}
+library(tseries)
+library(forecast)
+```
+
+
+Once the packages are loaded, we will import the data in R as time series.
+
+
+```{r message=FALSE}
+bank_case <- as.ts(scan("bank_case.txt"))
+bank_case
+```
+
+### STEP 2: MODEL ESTIMATION
+Now that we have imported the data as time series, we need to plot the time series data and its ACF PACF.
+This will help us to have an idea about the time series data and answer the following questions:
+
+* The Time Series is stationary or not?
+* Does the Times Series have constant mean ?
+* IS there a stochastic or deterministic trend in the data.
+
+
+```{r message=FALSE}
+par(mfrow=c(1,3))
+plot(bank_case,main="Time Series")
+acf(bank_case, main="ACF of real-estate loans data",lag.max=10,ylim = c(-1,1))
+pacf(bank_case,main="PACF of real-estate loans data",lag.max=10,ylim=c(-1,1))
+```
+It can be clearly seen from the plot of the time series that the time series is **not stationary** and requires differentiation in order to become stationary. The ACF also decreases gradually which also hints that the given time series is not stationary.
+
+### STEP 3 : TESTS FOR STATIONARITY
+Though it is clearly seen in the plots that the time series is not stationary, we will still perform the adf test , at a significance level of 0.05, to determine the stationarity.
+
+```{r message=FALSE}
+adf.test(bank_case)
+```
+
+We can see in the output that the p-value = 0.99 which is greater than 0.05. Hence, at a significance level of 0.05.Thus, we **fail to reject** the null hypothesis and conclude that the time series is non stationary.
+
+We will take first order difference and check the stationarity once again :
+```{r}
+bank_case_d1 <- diff(bank_case)
+adf.test(bank_case_d1)
+```
+Again, we can see from the output that the p-value = 0.6721 which is still greater than 0.05. Thus, at a significance level of 0.05, we again **fail to reject** the null hypothesis and conclude that the time series is nonstationary. 
+
+We will now take a second order difference and test the stationarity.
+```{r message=FALSE}
+bank_case_d2 <- diff(bank_case_d1)
+adf.test(bank_case_d2)
+```
+After the second order difference, we can see from the output that the p-value = 0.01157 which is less than 0.05.Hence, at a significance level of 0.05, we **reject the null hypothesis** and conclude that after taking the second order difference, the time series is stationary.
+
+
+Below is the plot of the second order time series , its ACF and PACF
+
+```{r message=FALSE}
+par(mfrow=c(1,3))
+plot(bank_case_d2,main="SOD Time Series")
+acf(bank_case_d2, main="ACF of SOD of Time Series ",lag.max=10,ylim = c(-1,1))
+pacf(bank_case_d2,main="PACF of SOD of Time Series",lag.max=10,ylim=c(-1,1))
+```
+
+### STEP 4: PARAMETER ESTIMATION
+Now that we have made the time series stationary, we will fit in the model for the original time series data and mention d=2. The above ACF and PACF suggests that MA(1) is a good candidate.
+
+```{r message=FALSE}
+bank_fit <- arima(x = bank_case, order = c(0, 2, 1))
+bank_fit
+```
+
+From the above output, It can be seen that for |-0.3722/0.1070|= 3.47 is greater than 2 , hence we *reject the null hypothesis* and conclude that it is significant.
+
+### STEP 5 : FITTED VALUES
+
+Once we have estimated the parameters , we will find the fitted values
+```{r message=FALSE}
+fitted(bank_fit)
+```
+
+### STEP 6 : RESIDUAL ANALYSIS
+
+While modeling the time series data, we made certain assumptions of the nature of error. 
+
+We need to plot the residual, its ACF and PACF in order to see if the assumptions are still intact. If the model fits the data well, then residual will behave like white noises.
+
+```{r message=FALSE}
+#Residual
+par(mfrow=c(1,3))
+plot(bank_fit$residuals, ylab='Residuals')
+acf(bank_fit$residuals,ylim=c(-1,1))
+pacf(bank_fit$residuals,ylim=c(-1,1))
+```
+<br />
+From the residual plot , we can confirm that the residual has a mean of 0 and the variance is constant as well . The ACF is 0 for lag> 0 , and the PACF is 0 as well.
+
+So, we can say that the residual behaves like white noise and conclude that the model ARIMA(0,2,1) fits the data well. Alternatively, we can also test at a significance level of 0.05 if residual follow white noise.
+
+```{r message=FALSE}
+checkresiduals(bank_fit)
+```
+
+Here, the p value is 0.4244 which is greater than 0.05 . Hence , at a significance level of 0.05 we **fail to reject** the null hypothesis and conclude that the residual follows white noise. This means that the model fits the data well.
+
+### STEP 7 : FORECASTING
+
+Now that we know the model is a good fit, we need to forecast for the next two years. This can be done as follows:
+
+```{r message=FALSE}
+bank_predict <- forecast(bank_fit,h=24)
+bank_predict
+plot(forecast(bank_fit,h=24))
+```
+
+Based on the steps described above, the final equation of the given time series is:
+
+$$ Zt - μ = (1-θ1B- θ2B^2) at $$
+$$ Zt = (1+0.3722B) at, at = N(0,0.08094) $$
