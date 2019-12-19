@@ -4,7 +4,7 @@ Project Link: http://rpubs.com/surabhik16/bankcasestudy
 
 Time series analysis comprises methods for analyzing time series data in order to extract meaningful statistics and other characteristics of the data. Time series forecasting is the use of a model to predict future values based on previously observed values of the same component.
 
-In this project, We have a time series data of the monthly volume of commercial bank real-estate loans, in billions of dollars, from January 1973 to October 1978, a total of 70 observations.
+In this project, a time series data of the monthly volume of commercial bank real-estate loans, in billions of dollars, from January 1973 to October 1978, is given . It has a total of 70 observations
 
 The data is as follows:
 
